@@ -8,9 +8,8 @@ function resizeCanvas() {
 }
 resizeCanvas();
 
-// Pool of characters and words
+// Pool of characters
 const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789アカサタナハマヤラワンガザダバパキャシャチャニミリギジビピウクスツヌフムユルグズブプキシチヒミリギジビピエケセテネヘメレゲゼデベペオコソトノホモヨロゴゾドボポヴッン';
-const words = ['control', 'shift', 'M'];
 
 const fontSize = 16;
 const columns = Math.floor(canvasMatrix.width / fontSize); // Calculate number of columns based on font size
@@ -25,21 +24,11 @@ function draw() {
 
   ctxMatrix.font = `${fontSize}px monospace`;
 
-  // Draw random characters or words
+  // Draw random characters
   for (let i = 0; i < drops.length; i++) {
-    // Decide if a word should be displayed based on the toggle and probability
-    const isWord = displayWords && Math.random() < 0.001; // Set probability for words
-    let text;
-
-    if (isWord) {
-      // Choose a random word from the words array
-      text = words[Math.floor(Math.random() * words.length)];
-      ctxMatrix.fillStyle = '#F00'; // Set color to red for words
-    } else {
-      // Choose a random letter from the letters string
-      text = letters.charAt(Math.floor(Math.random() * letters.length));
-      ctxMatrix.fillStyle = '#0F0'; // Set color to green for letters
-    }
+    // Choose a random letter from the letters string
+    const text = letters.charAt(Math.floor(Math.random() * letters.length));
+    ctxMatrix.fillStyle = '#0F0'; // Set color to green for letters
 
     // Draw the text at the current drop position
     ctxMatrix.fillText(text, i * fontSize, drops[i] * fontSize);
@@ -86,7 +75,7 @@ canvasMatrix.addEventListener('click', () => {
   stopMatrixEffect();
 });
 
-// Toggle words with "T" key press and start/stop matrix with Shift + Ctrl + M
+// Start/stop matrix with Shift + Ctrl + M
 document.addEventListener('keydown', (event) => {
   if (event.ctrlKey && event.shiftKey && (event.key === 'm' || event.key === 'M')) {
     event.preventDefault();
