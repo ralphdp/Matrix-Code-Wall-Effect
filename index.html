@@ -107,16 +107,7 @@
     <div class="input-group mb-4">
       <span class="input-group-text">Matrix Color:</span>
       <input id="matrix-color" type="text" value="#00FF00" class="form-control" style="height:38px;"/>
-    </div>
-
-    <div class="input-group">
-        <button id="start-matrix" class="btn btn-primary bg-gradient start-button"><i class="bi bi-play-fill"></i></button>
-        <button id="generate-gif" class="btn btn-dark bg-gradient" disabled onclick="exportAsGif()">
-          <i class="bi bi-filetype-gif"></i>
-        </button>
-        <button id="download-gif" class="btn btn-dark bg-gradient" disabled>
-          <i class="bi bi-download" id="download-icon"></i><span class="spinner-border text-light" role="status"></span>
-        </button>
+      <button id="start-matrix" class="btn btn-primary bg-gradient start-button"><i class="bi bi-play-fill"></i></button>
     </div>
   </div>
 
@@ -143,6 +134,10 @@
   let animationPlayed = false; // Global variable to track if animation has been played
   let gif; // Declare gif globally
 
+  // Declare variables at the top to avoid reference errors
+  const canvasMatrix = document.getElementById('matrix-canvas');
+  const ctxMatrix = canvasMatrix.getContext('2d');
+
   $(function () {
     // Initialize the Bootstrap color picker
     $('#matrix-color').colorpicker({
@@ -155,9 +150,6 @@
       updateMatrixColor(newColor); // Call function to update Matrix effect color
     });
 
-    // Declare variables at the top to avoid reference errors
-    const canvasMatrix = document.getElementById('matrix-canvas');
-    const ctxMatrix = canvasMatrix.getContext('2d');
     const fontSize = 16; // Initialize fontSize here
     let columns;
     let drops;
@@ -280,47 +272,7 @@
 
   });
 
-  // Export as GIF function
-  function exportAsGif() {
-    const generateGifButton = document.getElementById('generate-gif');
-    const downloadButton = document.getElementById('download-gif');
-    const downloadButtonIcon = document.getElementById('download-icon');
-    const spinner = downloadButton.querySelector('.spinner-border');
 
-    // Disable the generate GIF button while processing
-    generateGifButton.disabled = true;
-
-    // Show the loading spinner inside the download button
-    spinner.style.display = 'inline-block';
-    downloadButtonIcon.style.display = 'none';
-
-    gif.on('finished', function(blob) {
-      // Hide the spinner when the GIF is ready
-      spinner.style.display = 'none';
-      downloadButtonIcon.style.display = 'inline-block';
-
-      // Enable the GIF download button
-      downloadButton.disabled = false;
-
-      // Show the download icon
-      document.getElementById('download-icon').classList.remove('d-none');
-
-      const gifUrl = URL.createObjectURL(blob);
-      downloadButton.onclick = function() {
-        const a = document.createElement('a');
-        a.href = gifUrl;
-        a.download = 'matrix_effect.gif';
-        a.click();
-      };
-    });
-
-    // Render the GIF only after frames have been added
-    if (animationPlayed) {
-      gif.render(); // Start the GIF creation process
-    } else {
-      console.log('Animation has not played yet.');
-    }
-  }
   </script>
 </body>
 </html>
