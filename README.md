@@ -4,6 +4,8 @@ A web-based Matrix effect animation that mimics the iconic green cascading code 
 
 You can view the live demo [here](https://matrix.rdepaz.com/).
 
+![Matrix Wall Effect](https://matrix.rdepaz.com/matrix-2x-speed.gif)
+
 ## Instructions
 
 1. Clone or download this repository.

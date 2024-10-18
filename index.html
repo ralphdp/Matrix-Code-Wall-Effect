@@ -4,7 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Matrix Effect</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
+
+  <!-- Bootstrap Icons CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.3/font/bootstrap-icons.min.css" />
+
+  <!-- Bootstrap Colorpicker CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-colorpicker/3.2.0/css/bootstrap-colorpicker.min.css">
+
   <style>
     /* Make the canvas fill the entire screen */
     html, body {
@@ -15,6 +24,17 @@
       background-color: black;
     }
 
+    /* Color Picker and Button centered */
+    .color-picker-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 999;
+      color: white;
+      text-align: center;
+    }
+
     canvas {
       display: none; /* Initially hidden until triggered */
       position: fixed;
@@ -23,16 +43,6 @@
       width: 100%;
       height: 100%;
       z-index: 1000; /* Make sure the canvas is on top of other content */
-    }
-
-    /* Add some visual instructions for the user */
-    .instructions {
-      position: absolute;
-      top: 10px;
-      left: 20px;
-      color: white;
-      z-index: 999;
-      font-family: Arial, sans-serif;
     }
 
     /* GitHub Icon */
@@ -72,19 +82,43 @@
       text-decoration: underline;
     }
 
+    /* Spinner inside button */
+    .spinner-border {
+      display: none;
+      width: 1rem;
+      height: 1rem;
+    }
+
+    /* Initially hide the download icon */
+    #download-icon {
+      display: none_;
+    }
   </style>
 </head>
 <body>
 
-  <section class="instructions">
-    <p>Press <strong>Shift + Ctrl + M</strong> to start the Matrix effect.</p>
-    <p>Click the screen to stop the Matrix effect.</p>
-  </section>
-
-  <!-- GitHub Icon -->
+  <!-- GitHub Icon using Bootstrap Icons -->
   <a href="https://github.com/ralphdp/Matrix-Code-Wall-Effect" target="_blank" class="github-icon">
-    <i class="fab fa-github"></i>
+    <i class="bi bi-github"></i>
   </a>
+
+  <!-- Color Picker Input Group and Start Button Centered -->
+  <div class="color-picker-container">
+    <div class="input-group mb-4">
+      <span class="input-group-text">Matrix Color:</span>
+      <input id="matrix-color" type="text" value="#00FF00" class="form-control" style="height:38px;"/>
+    </div>
+
+    <div class="input-group">
+        <button id="start-matrix" class="btn btn-primary bg-gradient start-button"><i class="bi bi-play-fill"></i></button>
+        <button id="generate-gif" class="btn btn-dark bg-gradient" disabled onclick="exportAsGif()">
+          <i class="bi bi-filetype-gif"></i>
+        </button>
+        <button id="download-gif" class="btn btn-dark bg-gradient" disabled>
+          <i class="bi bi-download" id="download-icon"></i><span class="spinner-border text-light" role="status"></span>
+        </button>
+    </div>
+  </div>
 
   <canvas id="matrix-canvas"></canvas>
 
@@ -93,6 +127,200 @@
     <p><a href="https://rdepaz.com" target="_blank">rdepaz.com</a></p>
   </footer>
 
-  <script src="matrix.js"></script>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Bootstrap Colorpicker JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-colorpicker/3.2.0/js/bootstrap-colorpicker.min.js"></script>
+
+  <!-- gif.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+
+  <script>
+  let animationPlayed = false; // Global variable to track if animation has been played
+  let gif; // Declare gif globally
+
+  $(function () {
+    // Initialize the Bootstrap color picker
+    $('#matrix-color').colorpicker({
+      format: 'hex',
+    });
+
+    // Update the color of the Matrix effect when the color is changed
+    $('#matrix-color').on('colorpickerChange', function (event) {
+      const newColor = event.color.toString();
+      updateMatrixColor(newColor); // Call function to update Matrix effect color
+    });
+
+    // Declare variables at the top to avoid reference errors
+    const canvasMatrix = document.getElementById('matrix-canvas');
+    const ctxMatrix = canvasMatrix.getContext('2d');
+    const fontSize = 16; // Initialize fontSize here
+    let columns;
+    let drops;
+    let matrixColor = '#0F0'; // Default Matrix color (green)
+    let matrixEffectInterval;
+
+    // Resize the canvas to fill the screen
+    function resizeCanvas() {
+      canvasMatrix.width = window.innerWidth;
+      canvasMatrix.height = window.innerHeight;
+      resetDrops(); // Reset drops when canvas is resized
+    }
+
+    resizeCanvas();
+
+    // Pool of characters
+    const letters =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789アカサタナハマヤラワンガザダバパキャシャチャニミリギジビピウクスツヌフムユルグズブプキシチヒミリギジビピエケセテネヘメレゲゼデベペオコソトノホモヨロゴゾドボポヴッン';
+
+    // Function to reset columns and drop positions
+    function resetDrops() {
+      columns = Math.floor(canvasMatrix.width / fontSize); // Recalculate number of columns based on canvas width
+      drops = Array(columns).fill(0); // Reset each drop to 0 so they all start at the top
+      ctxMatrix.clearRect(0, 0, canvasMatrix.width, canvasMatrix.height); // Clear the canvas
+    }
+
+    // Function to update the Matrix effect color
+    function updateMatrixColor(newColor) {
+      matrixColor = newColor; // Update the global matrix color
+    }
+
+    function draw() {
+      ctxMatrix.fillStyle = 'rgba(0, 0, 0, 0.05)'; // Background with slight transparency
+      ctxMatrix.fillRect(0, 0, canvasMatrix.width, canvasMatrix.height); // Fill the canvas
+
+      ctxMatrix.font = `${fontSize}px monospace`;
+
+      // Draw random characters for each column
+      for (let i = 0; i < drops.length; i++) {
+        const text = letters.charAt(Math.floor(Math.random() * letters.length));
+        ctxMatrix.fillStyle = matrixColor; // Use the dynamically updated color
+
+        // Draw the text at the current drop position
+        ctxMatrix.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        // Randomly reset the drop position if it goes off the screen or based on a probability
+        if (drops[i] * fontSize > canvasMatrix.height && Math.random() > 0.975) {
+          drops[i] = 0; // Reset drop to the top with a random chance
+        }
+
+        drops[i]++; // Increment drop position for continuous fall
+      }
+
+      // Enable the "Generate GIF" button after the animation starts
+      if (!animationPlayed) {
+        animationPlayed = true;
+        document.getElementById('generate-gif').disabled = false;
+      }
+
+      // Capture frames for the GIF only after the animation has started
+      gif.addFrame(canvasMatrix, {copy: true, delay: 100});
+    }
+
+    function startMatrixEffect() {
+      console.log('Matrix effect started');
+      resetDrops(); // Reset drops and clear canvas
+      if (!matrixEffectInterval) {
+        matrixEffectInterval = setInterval(draw, 33); // Start drawing the Matrix effect
+      }
+      $('.color-picker-container').hide(); // Hide the color picker and button once the effect starts
+
+      // Reinitialize the GIF object every time the matrix effect starts
+      gif = new GIF({
+        workers: 2,
+        quality: 10,
+        workerScript: 'gif.worker.js'
+      });
+    }
+
+    function stopMatrixEffect() {
+      if (matrixEffectInterval) {
+        clearInterval(matrixEffectInterval); // Stop the drawing interval
+        matrixEffectInterval = null;
+      }
+      ctxMatrix.clearRect(0, 0, canvasMatrix.width, canvasMatrix.height); // Clear the canvas when the effect stops
+      canvasMatrix.style.display = 'none'; // Hide the canvas
+      $('.color-picker-container').show(); // Unhide the color picker and button when the effect stops
+      togglePageScrolling(true); // Enable scrolling
+      console.log('Matrix effect ended');
+    }
+
+    function openMatrixEffect() {
+      window.scrollTo(0, 0); // Scroll to the top
+      canvasMatrix.style.display = 'block'; // Show the canvas
+      startMatrixEffect(); // Start the Matrix effect
+      togglePageScrolling(false); // Disable scrolling
+    }
+
+    function togglePageScrolling(enable) {
+      document.body.style.overflow = enable ? 'auto' : 'hidden';
+    }
+
+    // Click event to stop the matrix effect
+    canvasMatrix.addEventListener('click', () => {
+      console.log('canvasMatrix clicked');
+      stopMatrixEffect(); // Stop the effect on click
+    });
+
+    // Event listener for the "Start Matrix Effect" button
+    document.getElementById('start-matrix').addEventListener('click', function() {
+      openMatrixEffect(); // Start the matrix effect when button is clicked
+    });
+
+    // Resize event to adjust the canvas and recalculate columns
+    window.addEventListener('resize', () => {
+      console.log('Window resized');
+      resizeCanvas();
+      resetDrops(); // Reset the drops when the window is resized
+    });
+
+  });
+
+  // Export as GIF function
+  function exportAsGif() {
+    const generateGifButton = document.getElementById('generate-gif');
+    const downloadButton = document.getElementById('download-gif');
+    const downloadButtonIcon = document.getElementById('download-icon');
+    const spinner = downloadButton.querySelector('.spinner-border');
+
+    // Disable the generate GIF button while processing
+    generateGifButton.disabled = true;
+
+    // Show the loading spinner inside the download button
+    spinner.style.display = 'inline-block';
+    downloadButtonIcon.style.display = 'none';
+
+    gif.on('finished', function(blob) {
+      // Hide the spinner when the GIF is ready
+      spinner.style.display = 'none';
+      downloadButtonIcon.style.display = 'inline-block';
+
+      // Enable the GIF download button
+      downloadButton.disabled = false;
+
+      // Show the download icon
+      document.getElementById('download-icon').classList.remove('d-none');
+
+      const gifUrl = URL.createObjectURL(blob);
+      downloadButton.onclick = function() {
+        const a = document.createElement('a');
+        a.href = gifUrl;
+        a.download = 'matrix_effect.gif';
+        a.click();
+      };
+    });
+
+    // Render the GIF only after frames have been added
+    if (animationPlayed) {
+      gif.render(); // Start the GIF creation process
+    } else {
+      console.log('Animation has not played yet.');
+    }
+  }
+  </script>
 </body>
 </html>
