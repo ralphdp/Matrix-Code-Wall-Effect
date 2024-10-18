@@ -2,6 +2,8 @@
 
 A web-based Matrix effect animation that mimics the iconic green cascading code from the Matrix movie. The animation features random characters falling down the screen, with occasional red words appearing. The effect can be toggled on and off using a keyboard shortcut and adapts to window resizing.
 
+You can view the live demo [here](https://ralphdp.github.io/Matrix-Code-Wall-Effect/).
+
 ## Features
 
 - **Keyboard Trigger**: Start the Matrix effect by pressing `Shift + Ctrl + M`.
