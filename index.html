@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Matrix Effect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     /* Make the canvas fill the entire screen */
     html, body {
@@ -28,21 +29,69 @@
     .instructions {
       position: absolute;
       top: 10px;
-      left: 10px;
+      left: 20px;
       color: white;
       z-index: 999;
       font-family: Arial, sans-serif;
     }
+
+    /* GitHub Icon */
+    .github-icon {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      color: white;
+      z-index: 999;
+      font-size: 24px;
+      text-decoration: none;
+    }
+
+    .github-icon:hover {
+      color: #ddd;
+    }
+
+    /* Footer */
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      text-align: center;
+      padding: 10px 0;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+    }
+
+    footer a {
+      color: white;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
   </style>
 </head>
 <body>
 
-  <div class="instructions">
+  <section class="instructions">
     <p>Press <strong>Shift + Ctrl + M</strong> to start the Matrix effect.</p>
     <p>Click the screen to stop the Matrix effect.</p>
-  </div>
+  </section>
+
+  <!-- GitHub Icon -->
+  <a href="https://github.com/ralphdp/Matrix-Code-Wall-Effect" target="_blank" class="github-icon">
+    <i class="fab fa-github"></i>
+  </a>
 
   <canvas id="matrix-canvas"></canvas>
+
+  <!-- Footer -->
+  <footer>
+    <p><a href="https://rdepaz.com" target="_blank">rdepaz.com</a></p>
+  </footer>
 
   <script src="matrix.js"></script>
 </body>
