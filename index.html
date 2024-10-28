@@ -131,133 +131,129 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-colorpicker/3.2.0/js/bootstrap-colorpicker.min.js"></script>
 
   <script>
-  let animationPlayed = false; // Global variable to track if animation has been played
-  let gif; // Declare gif globally
+    let animationPlayed = false;
+    let gif;
+    const canvasMatrix = document.getElementById('matrix-canvas');
+    const ctxMatrix = canvasMatrix.getContext('2d', { willReadFrequently: true });
 
-  // Declare variables at the top to avoid reference errors
-  const canvasMatrix = document.getElementById('matrix-canvas');
-  const ctxMatrix = canvasMatrix.getContext('2d', { willReadFrequently: true });
+    $(function () {
+      $('#matrix-color').colorpicker({
+        format: 'hex',
+      });
 
-  $(function () {
-    // Initialize the Bootstrap color picker
-    $('#matrix-color').colorpicker({
-      format: 'hex',
-    });
+      $('#matrix-color').on('colorpickerChange', function (event) {
+        const newColor = event.color.toString();
+        updateMatrixColor(newColor);
+      });
 
-    // Update the color of the Matrix effect when the color is changed
-    $('#matrix-color').on('colorpickerChange', function (event) {
-      const newColor = event.color.toString();
-      updateMatrixColor(newColor); // Call function to update Matrix effect color
-    });
+      const fontSize = 16;
+      let columns;
+      let drops;
+      let matrixColor = '#0F0';
+      let matrixEffectInterval;
 
-    const fontSize = 16; // Initialize fontSize here
-    let columns;
-    let drops;
-    let matrixColor = '#0F0'; // Default Matrix color (green)
-    let matrixEffectInterval;
-
-    // Resize the canvas to fill the screen
-    function resizeCanvas() {
-      canvasMatrix.width = window.innerWidth;
-      canvasMatrix.height = window.innerHeight;
-      resetDrops(); // Reset drops when canvas is resized
-    }
-
-    resizeCanvas();
-
-    // Pool of characters
-    const letters =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789アカサタナハマヤラワンガザダバパキャシャチャニミリギジビピウクスツヌフムユルグズブプキシチヒミリギジビピエケセテネヘメレゲゼデベペオコソトノホモヨロゴゾドボポヴッン';
-
-    // Function to reset columns and drop positions
-    function resetDrops() {
-      columns = Math.floor(canvasMatrix.width / fontSize); // Recalculate number of columns based on canvas width
-      drops = Array(columns).fill(0); // Reset each drop to 0 so they all start at the top
-      ctxMatrix.clearRect(0, 0, canvasMatrix.width, canvasMatrix.height); // Clear the canvas
-    }
-
-    // Function to update the Matrix effect color
-    function updateMatrixColor(newColor) {
-      matrixColor = newColor; // Update the global matrix color
-    }
-
-    function draw() {
-      ctxMatrix.fillStyle = 'rgba(0, 0, 0, 0.05)'; // Background with slight transparency
-      ctxMatrix.fillRect(0, 0, canvasMatrix.width, canvasMatrix.height); // Fill the canvas
-
-      ctxMatrix.font = `${fontSize}px monospace`;
-
-      // Draw random characters for each column
-      for (let i = 0; i < drops.length; i++) {
-        const text = letters.charAt(Math.floor(Math.random() * letters.length));
-        ctxMatrix.fillStyle = matrixColor; // Use the dynamically updated color
-
-        // Draw the text at the current drop position
-        ctxMatrix.fillText(text, i * fontSize, drops[i] * fontSize);
-
-        // Randomly reset the drop position if it goes off the screen or based on a probability
-        if (drops[i] * fontSize > canvasMatrix.height && Math.random() > 0.975) {
-          drops[i] = 0; // Reset drop to the top with a random chance
-        }
-
-        drops[i]++; // Increment drop position for continuous fall
+      function resizeCanvas() {
+        canvasMatrix.width = window.innerWidth;
+        canvasMatrix.height = window.innerHeight;
+        resetDrops();
       }
 
-    }
-
-    function startMatrixEffect() {
-      console.log('Matrix effect started');
-      resetDrops(); // Reset drops and clear canvas
-      if (!matrixEffectInterval) {
-        matrixEffectInterval = setInterval(draw, 33); // Start drawing the Matrix effect
-      }
-      $('.color-picker-container').hide(); // Hide the color picker and button once the effect starts
-
-    }
-
-    function stopMatrixEffect() {
-      if (matrixEffectInterval) {
-        clearInterval(matrixEffectInterval); // Stop the drawing interval
-        matrixEffectInterval = null;
-      }
-      ctxMatrix.clearRect(0, 0, canvasMatrix.width, canvasMatrix.height); // Clear the canvas when the effect stops
-      canvasMatrix.style.display = 'none'; // Hide the canvas
-      $('.color-picker-container').show(); // Unhide the color picker and button when the effect stops
-      togglePageScrolling(true); // Enable scrolling
-      console.log('Matrix effect ended');
-    }
-
-    function openMatrixEffect() {
-      window.scrollTo(0, 0); // Scroll to the top
-      canvasMatrix.style.display = 'block'; // Show the canvas
-      startMatrixEffect(); // Start the Matrix effect
-      togglePageScrolling(false); // Disable scrolling
-    }
-
-    function togglePageScrolling(enable) {
-      document.body.style.overflow = enable ? 'auto' : 'hidden';
-    }
-
-    // Click event to stop the matrix effect
-    canvasMatrix.addEventListener('click', () => {
-      stopMatrixEffect(); // Stop the effect on click
-    });
-
-    // Event listener for the "Start Matrix Effect" button
-    document.getElementById('start-matrix').addEventListener('click', function() {
-      openMatrixEffect(); // Start the matrix effect when button is clicked
-    });
-
-    // Resize event to adjust the canvas and recalculate columns
-    window.addEventListener('resize', () => {
-      console.log('Window resized');
       resizeCanvas();
-      resetDrops(); // Reset the drops when the window is resized
+
+      // Expanded sushi recipes and ingredients (in Katakana with translations for context)
+      const recipes = [
+        'サーモン', 'ご飯', '酢', '砂糖', '塩 少々', 'のり', '醤油で味付け', 'わさびを添えて', '巻き寿司', 'にぎり寿司', '手巻き寿司',
+        'エビ', 'アボカド', 'キュウリ', 'ツナ缶 1缶', 'ごま油', '薄く切った刺身', '酢飯を作る', '具材を巻く', '細く切った海苔',
+        '酢飯を広げる', '刺身をのせる', 'マグロ', 'ハマチ', 'イクラ', 'カニカマ', 'ウナギ', 'サバ', 'タマゴ焼き', 'ネギトロ',
+        'シソ葉', 'とびっこ', 'ゴマをまぶす', 'スダチを添える', '味噌をぬる', 'ポン酢で味付け', 'シャリ', 'サーモンロール',
+        'タコの刺身', '細巻き', '鉄火巻', 'えんがわ', 'カツオ'
+      ];
+
+      // Additional half-width kana, Latin letters, and numerals for variation
+      const randomChars = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾜｦﾝABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;:",.<>?/`~';
+
+      function resetDrops() {
+        columns = Math.floor(canvasMatrix.width / fontSize);
+        drops = Array(columns).fill(0);
+        ctxMatrix.clearRect(0, 0, canvasMatrix.width, canvasMatrix.height);
+      }
+
+      function updateMatrixColor(newColor) {
+        matrixColor = newColor;
+      }
+
+      function draw() {
+        ctxMatrix.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctxMatrix.fillRect(0, 0, canvasMatrix.width, canvasMatrix.height);
+        ctxMatrix.font = `${fontSize}px monospace`;
+
+        for (let i = 0; i < drops.length; i++) {
+          // Randomly decide whether to use a recipe character or a random half-width kana/Latin/numeral character
+          let text;
+          if (Math.random() > 0.2) {  // 80% chance to use recipe character
+            const phrase = recipes[Math.floor(Math.random() * recipes.length)];
+            const chars = phrase.split('');
+            const charIndex = drops[i] % chars.length;
+            text = chars[charIndex];
+          } else {  // 20% chance to use a random half-width kana, Latin letter, or numeral
+            text = randomChars.charAt(Math.floor(Math.random() * randomChars.length));
+          }
+
+          ctxMatrix.fillStyle = matrixColor;
+          ctxMatrix.fillText(text, i * fontSize, drops[i] * fontSize);
+
+          if (drops[i] * fontSize > canvasMatrix.height && Math.random() > 0.975) {
+            drops[i] = 0;
+          }
+
+          drops[i]++;
+        }
+      }
+
+      function startMatrixEffect() {
+        resetDrops();
+        if (!matrixEffectInterval) {
+          matrixEffectInterval = setInterval(draw, 33);
+        }
+        $('.color-picker-container').hide();
+      }
+
+      function stopMatrixEffect() {
+        if (matrixEffectInterval) {
+          clearInterval(matrixEffectInterval);
+          matrixEffectInterval = null;
+        }
+        ctxMatrix.clearRect(0, 0, canvasMatrix.width, canvasMatrix.height);
+        canvasMatrix.style.display = 'none';
+        $('.color-picker-container').show();
+        togglePageScrolling(true);
+      }
+
+      function openMatrixEffect() {
+        window.scrollTo(0, 0);
+        canvasMatrix.style.display = 'block';
+        startMatrixEffect();
+        togglePageScrolling(false);
+      }
+
+      function togglePageScrolling(enable) {
+        document.body.style.overflow = enable ? 'auto' : 'hidden';
+      }
+
+      canvasMatrix.addEventListener('click', () => {
+        stopMatrixEffect();
+      });
+
+      document.getElementById('start-matrix').addEventListener('click', function() {
+        openMatrixEffect();
+      });
+
+      window.addEventListener('resize', () => {
+        resizeCanvas();
+        resetDrops();
+      });
     });
-
-  });
-
-
   </script>
+
 </body>
 </html>
